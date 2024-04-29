@@ -9,11 +9,22 @@ from models.image_processing_task import ImageOperation, ImageProcessingTask
 from processing import apply, divide_image_into_arrays
 
 class WorkerThread(threading.Thread):
+    """
+    A subclass of threading.Thread for processing image processing tasks in parallel.
+
+    Attributes:
+        task (ImageProcessingTask): The image processing task to be performed.
+    """
+
     def __init__(self, task: ImageProcessingTask):
         super().__init__()
         self.task = task
 
     def run(self):
+        """
+        Execute the image processing task in parallel using MPI.
+        """
+        
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         size = comm.Get_size()
