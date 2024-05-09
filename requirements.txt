@@ -1,3 +1,6 @@
 mpi4py==3.1.6
 numpy==1.26.4
 opencv-python==4.9.0.80
+openmpi==0.0.1
+pyzmq==26.0.3
+zmq==0.0.0
