@@ -1,11 +1,7 @@
-import signal
-import threading
 import time
 import zmq
 
 from models.zeromq_events import ZeroMQEvent
-
-signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 class ZMQEventSender():
 
@@ -15,6 +11,8 @@ class ZMQEventSender():
         context = zmq.Context()
         self.socket = context.socket(zmq.PUB)
         self.socket.bind(addr)
+        time.sleep(1)
 
     def send(self, event: ZeroMQEvent, data: str):
-        self.socket.send(bytes(event + " " + data))
+        print("PUBLSIHING: " + str(event.name) + " " + data)
+        self.socket.send(bytes(str(event.name) + " " + data, "UTF-8"))

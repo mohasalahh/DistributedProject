@@ -1,4 +1,3 @@
-import signal
 import threading
 import zmq
 
@@ -14,11 +13,11 @@ class ZMQEventReceiver(threading.Thread):
 
         self.socket = context.socket(zmq.SUB)
         self.socket.connect(addr)
-        
-        self.socket.setsockopt(zmq.SUBSCRIBE, bytes(ZeroMQEvent.PROGRESS_UPDATE))
-        self.socket.setsockopt(zmq.SUBSCRIBE, bytes(ZeroMQEvent.NODE_FAILED))
-        self.socket.setsockopt(zmq.SUBSCRIBE, bytes(ZeroMQEvent.PROCESSING_FAILED))
-        self.socket.setsockopt(zmq.SUBSCRIBE, bytes(ZeroMQEvent.PROCESSING_DONE))
+    
+        self.socket.setsockopt(zmq.SUBSCRIBE, bytes(ZeroMQEvent.NODE_FAILED.name, "UTF-8"))
+        self.socket.setsockopt(zmq.SUBSCRIBE, bytes(ZeroMQEvent.PROCESSING_FAILED.name, "UTF-8"))
+        self.socket.setsockopt(zmq.SUBSCRIBE, bytes(ZeroMQEvent.PROCESSING_DONE.name, "UTF-8"))
+        self.socket.setsockopt(zmq.SUBSCRIBE, bytes(ZeroMQEvent.PROGRESS_UPDATE.name, "UTF-8"))
 
     def run(self):
         while True:
