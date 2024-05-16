@@ -9,6 +9,7 @@ import threading
 from models.image_processing_task import ImageOperation, ImageProcessingTask
 from models.zeromq_events import ZeroMQEvent
 from mpi.processing import apply, divide_image_into_arrays
+from zmq_helpers.zmq_receiver import ZMQEventReceiver
 from zmq_helpers.zmq_sender import send_to_zmq
 
 class WorkerThread(threading.Thread):
@@ -22,6 +23,8 @@ class WorkerThread(threading.Thread):
     def __init__(self, task: ImageProcessingTask):
         super().__init__()
         self.task = task
+        # flag indicating if any of the nodes failed
+        self.didFail = False
 
     def run(self):
         """
@@ -35,6 +38,7 @@ class WorkerThread(threading.Thread):
         try:
             # Load image data on rank 0
             if rank == 0:
+                self.zmqReceiver = ZMQEventReceiver([ZeroMQEvent.NODE_FAILED], self.didRecieveMessage)
                 image_data = divide_image_into_arrays(self.task.img_path, size)
             else:
                 image_data = None
@@ -50,6 +54,10 @@ class WorkerThread(threading.Thread):
 
             # On rank 0, combine filtered chunks and save the filtered image
             if rank == 0:
+                if self.didFail:
+                    data = " ".join([self.task.id])
+                    send_to_zmq(ZeroMQEvent.PROCESSING_FAILED, data)
+                    return
                 filtered_image = np.concatenate(all_filtered_chunks, axis=1)
                 cv2.imwrite(self.task.get_save_path(), filtered_image) 
                 data = " ".join([self.task.id, self.task.get_save_path()])
@@ -57,12 +65,24 @@ class WorkerThread(threading.Thread):
             else:
                 send_to_zmq(ZeroMQEvent.PROGRESS_UPDATE, self.task.id)
         except Exception as e:
+            print(e)
             if rank == 0:
                 data = " ".join([self.task.id])
                 send_to_zmq(ZeroMQEvent.PROCESSING_FAILED, data)
             else:
-                data = " ".join([self.task.id, rank])
+                data = " ".join([self.task.id, str(rank)])
                 send_to_zmq(ZeroMQEvent.NODE_FAILED, data)
+
+    def didRecieveMessage(self, event: ZeroMQEvent, data: str):
+        if event != ZeroMQEvent.NODE_FAILED: return
+        dataSplit = data.split(" ")
+        process_id = dataSplit[0]
+        rank = dataSplit[1] # rank of failed node
+
+        if process_id == self.task.id:
+            self.didFail = True
+
+        
 
 
 
