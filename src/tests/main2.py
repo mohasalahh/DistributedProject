@@ -2,7 +2,7 @@
 
 import signal
 import time
-import zmq_helpers
+import rmq_helpers
 from models.zeromq_events import ZeroMQEvent
 from zmq_sender import ZMQEventSender
 

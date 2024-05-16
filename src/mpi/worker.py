@@ -9,8 +9,8 @@ import threading
 from models.image_processing_task import ImageOperation, ImageProcessingTask
 from models.zeromq_events import ZeroMQEvent
 from mpi.processing import apply, divide_image_into_arrays
-from zmq_helpers.zmq_receiver import ZMQEventReceiver
-from zmq_helpers.zmq_sender import send_to_zmq
+from rmq_helpers.rmq_receiver import ZMQEventReceiver
+from rmq_helpers.rmq_sender import send_to_rmq
 
 class WorkerThread(threading.Thread):
     """
@@ -56,22 +56,22 @@ class WorkerThread(threading.Thread):
             if rank == 0:
                 if self.didFail:
                     data = " ".join([self.task.id])
-                    send_to_zmq(ZeroMQEvent.PROCESSING_FAILED, data)
+                    send_to_rmq(ZeroMQEvent.PROCESSING_FAILED, data)
                     return
                 filtered_image = np.concatenate(all_filtered_chunks, axis=1)
                 cv2.imwrite(self.task.get_save_path(), filtered_image) 
                 data = " ".join([self.task.id, self.task.get_save_path()])
-                send_to_zmq(ZeroMQEvent.PROCESSING_DONE, data)
+                send_to_rmq(ZeroMQEvent.PROCESSING_DONE, data)
             else:
-                send_to_zmq(ZeroMQEvent.PROGRESS_UPDATE, self.task.id)
+                send_to_rmq(ZeroMQEvent.PROGRESS_UPDATE, self.task.id)
         except Exception as e:
             print(e)
             if rank == 0:
                 data = " ".join([self.task.id])
-                send_to_zmq(ZeroMQEvent.PROCESSING_FAILED, data)
+                send_to_rmq(ZeroMQEvent.PROCESSING_FAILED, data)
             else:
                 data = " ".join([self.task.id, str(rank)])
-                send_to_zmq(ZeroMQEvent.NODE_FAILED, data)
+                send_to_rmq(ZeroMQEvent.NODE_FAILED, data)
 
     def didRecieveMessage(self, event: ZeroMQEvent, data: str):
         if event != ZeroMQEvent.NODE_FAILED: return

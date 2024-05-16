@@ -1,6 +1,6 @@
 
 from models.zeromq_events import ZeroMQEvent
-from zmq_helpers.zmq_receiver import ZMQEventReceiver
+from rmq_helpers.rmq_receiver import ZMQEventReceiver
 import subprocess
 
 
@@ -15,6 +15,7 @@ class TaskManager():
     def didRecieveMessage(self, event: ZeroMQEvent, data: str):
         if event != ZeroMQEvent.START_PROCESSING: return
         dataSplit = data.split(" ")
+        print(dataSplit)
         process_id = dataSplit[0]
         img_path = dataSplit[1]
         op_id = dataSplit[2]

@@ -2,7 +2,7 @@ import uuid
 from flask import Flask, render_template, request
 
 from models.zeromq_events import ZeroMQEvent
-from zmq_helpers.zmq_sender import send_to_zmq
+from rmq_helpers.rmq_sender import send_to_rmq
 
 app = Flask(__name__)
 
@@ -29,7 +29,7 @@ def upload():
         op_id = 1
 
         data = " ".join([id, img_path, str(op_id)])
-        send_to_zmq(ZeroMQEvent.START_PROCESSING, data)
+        send_to_rmq(ZeroMQEvent.START_PROCESSING, data)
         return 'File uploaded successfully'
 
 if __name__ == '__main__':
