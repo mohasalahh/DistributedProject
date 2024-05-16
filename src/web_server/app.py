@@ -1,4 +1,8 @@
+import uuid
 from flask import Flask, render_template, request
+
+from models.zeromq_events import ZeroMQEvent
+from zmq_helpers.zmq_sender import send_to_zmq
 
 app = Flask(__name__)
 
@@ -14,7 +18,14 @@ def upload():
     if file.filename == '':
         return 'No selected file'
     if file:
-        file.save('/Users/mohamedsalah/Documents/Mixes/DistributedProject/uploaded_imgs/' + file.filename)
+        id = str(uuid.uuid4())
+        fileName = file.filename.split(".")
+        fileExt = fileName[len(fileName)-1]
+
+        finalFileName = id+"."+fileExt
+        
+        file.save('/Users/mohamedsalah/Documents/Mixes/DistributedProject/uploaded_imgs/' + finalFileName)
+        send_to_zmq(ZeroMQEvent.START_PROCESSING, id)
         return 'File uploaded successfully'
 
 if __name__ == '__main__':
