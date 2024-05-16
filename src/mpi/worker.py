@@ -1,3 +1,4 @@
+import argparse
 from enum import Enum
 import uuid
 import cv2
@@ -6,7 +7,7 @@ from mpi4py import MPI
 import threading
 
 from models.image_processing_task import ImageOperation, ImageProcessingTask
-from processing import apply, divide_image_into_arrays
+from mpi.processing import apply, divide_image_into_arrays
 
 class WorkerThread(threading.Thread):
     """
@@ -31,7 +32,7 @@ class WorkerThread(threading.Thread):
 
         # Load image data on rank 0
         if rank == 0:
-            image_data = divide_image_into_arrays(self.task.image_path, size)
+            image_data = divide_image_into_arrays(self.task.img_path, size)
         else:
             image_data = None
 
@@ -48,3 +49,23 @@ class WorkerThread(threading.Thread):
         if rank == 0:
             filtered_image = np.concatenate(all_filtered_chunks, axis=1)
             cv2.imwrite(self.task.get_save_path(), filtered_image) 
+
+def main():
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('process_id', type=str, help='The process ID')
+    parser.add_argument('img_path', type=str, help='The img path')
+    parser.add_argument('operation_id', type=int, help='The operation ID')
+
+    args = parser.parse_args()
+    process_id: str = args.process_id
+    img_path: str = args.img_path
+    operation_id: int = args.operation_id
+
+    new_task = ImageProcessingTask(process_id, img_path, ImageOperation(operation_id) )
+
+    worker_thread = WorkerThread(new_task)
+    worker_thread.start()
+
+
+if __name__ == '__main__':
+    main()

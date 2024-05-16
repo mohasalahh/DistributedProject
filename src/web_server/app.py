@@ -23,9 +23,13 @@ def upload():
         fileExt = fileName[len(fileName)-1]
 
         finalFileName = id+"."+fileExt
-        
-        file.save('/Users/mohamedsalah/Documents/Mixes/DistributedProject/uploaded_imgs/' + finalFileName)
-        send_to_zmq(ZeroMQEvent.START_PROCESSING, id)
+        img_path = '/Users/mohamedsalah/Documents/Mixes/DistributedProject/uploaded_imgs/' + finalFileName
+        file.save(img_path)
+
+        op_id = 1
+
+        data = " ".join([id, img_path, str(op_id)])
+        send_to_zmq(ZeroMQEvent.START_PROCESSING, data)
         return 'File uploaded successfully'
 
 if __name__ == '__main__':
