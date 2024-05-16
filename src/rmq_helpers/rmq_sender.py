@@ -1,11 +1,11 @@
 import pika
 
-from models.zeromq_events import ZeroMQEvent
+from models.rmq_events import RMQEvent
 
 import pika
 
 
-def send_to_rmq(event: ZeroMQEvent, data: str):
+def send_to_rmq(event: RMQEvent, data: str):
     connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
     # Create a channel
     channel = connection.channel()

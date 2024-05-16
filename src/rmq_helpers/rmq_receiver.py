@@ -3,11 +3,11 @@ from typing import List
 import pika
 import zmq
 
-from models.zeromq_events import ZeroMQEvent
+from models.rmq_events import RMQEvent
 
-class ZMQEventReceiver(threading.Thread):
+class RMQEventReceiver(threading.Thread):
 
-    def __init__(self, events: List[ZeroMQEvent], did_receive_function, addr: str = 'tcp://localhost:5555'):
+    def __init__(self, events: List[RMQEvent], did_receive_function, addr: str = 'tcp://localhost:5555'):
         super().__init__()
         self.events = events
         self.did_receive_function = did_receive_function
@@ -17,7 +17,7 @@ class ZMQEventReceiver(threading.Thread):
         self.consume_messages(self.events)
 
 
-    def consume_messages(self, events: List[ZeroMQEvent]):
+    def consume_messages(self, events: List[RMQEvent]):
         # Connect to RabbitMQ server
         connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
         # Create a channel
@@ -45,8 +45,8 @@ class ZMQEventReceiver(threading.Thread):
         event_name = method.routing_key
         print("received message->  ", event_name, ": ", body)
         message = body.decode('utf-8')
-        if event_name in ZeroMQEvent.__members__:
-            message_enum = ZeroMQEvent[event_name]
+        if event_name in RMQEvent.__members__:
+            message_enum = RMQEvent[event_name]
             self.did_receive_function(message_enum, message)
         else:
             print("Message not found")

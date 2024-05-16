@@ -3,7 +3,7 @@
 import signal
 import time
 import rmq_helpers
-from models.zeromq_events import ZeroMQEvent
+from models.rmq_events import RMQEvent
 from zmq_sender import ZMQEventSender
 
 
@@ -17,5 +17,5 @@ if __name__ == "__main__":
     # worker_thread.start()
 
     zeroMQReceiver = ZMQEventSender()
-    zeroMQReceiver.send(ZeroMQEvent.PROGRESS_UPDATE, "process_id:100")
+    zeroMQReceiver.send(RMQEvent.PROGRESS_UPDATE, "process_id:100")
     time.sleep(5)

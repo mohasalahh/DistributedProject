@@ -2,7 +2,7 @@
 from enum import Enum
 
 
-class ZeroMQEvent(Enum):
+class RMQEvent(Enum):
     NODE_FAILED = 1
     PROCESSING_FAILED = 2
     PROCESSING_DONE = 3
