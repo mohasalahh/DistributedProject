@@ -17,12 +17,14 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    if 'file' not in request.files:
+    if 'files' not in request.files:
         return 'No file part'
-    file = request.files['file']
-    if file.filename == '':
-        return 'No selected file'
-    if file:
+    files = request.files.getlist('files')
+    if len(files) == 0:
+        return 'No selected files'
+    
+    tracked_ids = []
+    for file in files:
         id = str(uuid.uuid4())
         fileName = file.filename.split(".")
         fileExt = fileName[len(fileName)-1]
@@ -36,7 +38,9 @@ def upload():
         data = " ".join([id, img_path, str(op_id)])
         send_to_rmq(RMQEvent.START_PROCESSING, data)
 
-        return redirect("/track/"+id)
+        tracked_ids.append(id)
+    
+    return redirect("/track/"+",".join(tracked_ids))
 
 
 @app.route('/track/<string:process_id>')
@@ -47,13 +51,14 @@ def track_process(process_id: str):
 client_rooms = {}
 
 @socketio.on('track')
-def handle_track(process_id):
+def handle_track(processes_ids):
+    for process_id in processes_ids:
     # Store client's room
-    if process_id not in client_rooms:
-        client_rooms[process_id] = []
-    client_rooms[process_id].append(request.sid)
+        if process_id not in client_rooms:
+            client_rooms[process_id] = []
+        client_rooms[process_id].append(request.sid)
 
-    print(f"Client with ID: {request.sid} is tracking process: {process_id}")
+        print(f"Client with ID: {request.sid} is tracking process: {process_id}")
 
 def didRecieveMessage(event: RMQEvent, data: str):
     dataSplit = data.split(" ")

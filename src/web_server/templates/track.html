@@ -13,9 +13,10 @@
         var socket = io();
 
         // Specify the client ID when connecting
-        var process_id = window.location.pathname.split('/').pop(); // Extract the last part of the URL path
+        var processes_ids = window.location.pathname.split('/').pop(); // Extract the last part of the URL path
+        var idsArry = processes_ids.split(",")
         socket.on('connect', function () {
-            socket.emit('track', process_id);
+            socket.emit('track', idsArry);
         });
 
         var finished_processing = false;
