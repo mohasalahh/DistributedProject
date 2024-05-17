@@ -3,6 +3,7 @@ import uuid
 from flask_socketio import SocketIO
 from flask import Flask, redirect, render_template, request
 
+from constants import PROCESSED_PATH, UPLOADED_PATH
 from models.rmq_events import RMQEvent
 from rmq_helpers.rmq_receiver import RMQEventReceiver
 from rmq_helpers.rmq_sender import send_to_rmq
@@ -27,7 +28,7 @@ def upload():
         fileExt = fileName[len(fileName)-1]
 
         finalFileName = id+"."+fileExt
-        img_path = '/Users/mohamedsalah/Documents/Mixes/DistributedProject/uploaded_imgs/' + finalFileName
+        img_path = UPLOADED_PATH + finalFileName
         file.save(img_path)
 
         op_id = request.form.get('op_id')  # Get op_id from form data
@@ -69,7 +70,7 @@ def didRecieveMessage(event: RMQEvent, data: str):
         emitUpdateOf(process_id, "process_failed", {'reason': "undefined"})
     elif event == RMQEvent.PROCESSING_DONE:
         # TODO: - Add Config
-        emitUpdateOf(process_id, "process_done", {'downloadLink': "/Users/mohamedsalah/Documents/Mixes/DistributedProject/processed_imgs/"+process_id+".png"})
+        emitUpdateOf(process_id, "process_done", {'downloadLink': PROCESSED_PATH+process_id+".png"})
 
 
 def emitUpdateOf(process_id, event, data):

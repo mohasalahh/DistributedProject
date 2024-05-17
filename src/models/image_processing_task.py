@@ -1,5 +1,7 @@
 from enum import Enum, IntEnum
 
+from constants import PROCESSED_PATH
+
 
 class ImageOperation(IntEnum):
     """
@@ -33,4 +35,4 @@ class ImageProcessingTask:
         Returns:
             str: The path to save the processed image.
         """
-        return "/Users/mohamedsalah/Documents/Mixes/DistributedProject/processed_imgs/" + self.id + ".png"
+        return PROCESSED_PATH + self.id + ".png"
