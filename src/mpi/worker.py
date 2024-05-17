@@ -52,12 +52,13 @@ class WorkerThread(threading.Thread):
             # Scatter image data to all processes
             local_chunk = comm.scatter(image_data, root=0)
 
-            # simulate error in one node
             
             time.sleep(random.randint(3, 10))
 
-            if rank == 1:
-                raise Exception("Example Error")
+            # simulate error in one node
+            # if rank == 1:
+            #     raise Exception("Example Error")
+            
             # Apply Gaussian filter to local chunk of image data
             filtered_chunk = apply(self.task.operation_type, local_chunk)
 
