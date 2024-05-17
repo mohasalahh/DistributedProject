@@ -5,6 +5,7 @@ from flask import Flask, redirect, render_template, request
 
 from constants import PROCESSED_PATH, UPLOADED_PATH
 from models.rmq_events import RMQEvent
+from redis_access.redis_access import get_from_redis, set_to_redis
 from rmq_helpers.rmq_receiver import RMQEventReceiver
 from rmq_helpers.rmq_sender import send_to_rmq
 
@@ -53,14 +54,27 @@ client_rooms = {}
 @socketio.on('track')
 def handle_track(processes_ids):
     for process_id in processes_ids:
-    # Store client's room
+        # Store client's room
         if process_id not in client_rooms:
             client_rooms[process_id] = []
         client_rooms[process_id].append(request.sid)
+        
+        current_state = str(get_from_redis(process_id))
+        if current_state:
+            current_state_split = current_state.split(" ")
+            event = RMQEvent[current_state_split[0]]
+            emitRMQEvent(event, " ".join(current_state_split[1:]))
 
         print(f"Client with ID: {request.sid} is tracking process: {process_id}")
 
 def didRecieveMessage(event: RMQEvent, data: str):
+    dataSplit = data.split(" ")
+    process_id = dataSplit[0]
+        
+    set_to_redis(process_id, " ".join([event.name, data]))
+    emitRMQEvent(event, data)
+
+def emitRMQEvent(event: RMQEvent, data: str): 
     dataSplit = data.split(" ")
     process_id = dataSplit[0]
 

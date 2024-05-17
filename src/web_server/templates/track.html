@@ -48,6 +48,7 @@
         });
 
         socket.on('process_done', function (data) {
+            console.log("as888")
             finished_processing = true;
             let process_id = data.id;
             // TODO: - Handle process faliure here 
