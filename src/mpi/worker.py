@@ -1,8 +1,6 @@
 import argparse
-from enum import Enum
 import random
 import time
-import uuid
 import cv2
 import numpy as np
 from mpi4py import MPI
@@ -16,16 +14,22 @@ from rmq_helpers.rmq_sender import send_to_rmq
 
 class WorkerThread(threading.Thread):
     """
-    A subclass of threading.Thread for processing image processing tasks in parallel.
+    This class represents a worker thread in a distributed image processing system,
+    capable of processing tasks in parallel using MPI and handling MPI-related errors.
 
     Attributes:
         task (ImageProcessingTask): The image processing task to be performed.
     """
 
     def __init__(self, task: ImageProcessingTask):
+        """
+        Initializes the WorkerThread with a specific image processing task.
+
+        Args:
+            task (ImageProcessingTask): The image processing task assigned to this worker.
+        """
         super().__init__()
         self.task = task
-        # flag indicating if any of the nodes failed
         self.zmqReceiver = None
         self.didFail = False
         self.num_of_nodes_done = 0
@@ -33,15 +37,14 @@ class WorkerThread(threading.Thread):
 
     def run(self):
         """
-        Execute the image processing task in parallel using MPI.
+        Runs the worker thread, executing the distributed image processing task using MPI,
+        handling node failures, and sending updates via RabbitMQ.
         """
-        
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         self.size = comm.Get_size()
-        
+
         try:
-            # Load image data on rank 0
             if rank == 0:
                 self.zmqReceiver = RMQEventReceiver([RMQEvent.NODE_FAILED, RMQEvent.NODE_DONE], self.didRecieveMessage)
                 self.zmqReceiver.start()
@@ -49,88 +52,74 @@ class WorkerThread(threading.Thread):
             else:
                 image_data = None
 
-            # Scatter image data to all processes
             local_chunk = comm.scatter(image_data, root=0)
 
-            
-            time.sleep(random.randint(3, 10))
+            time.sleep(random.randint(3, 10))  # Simulate processing delay
 
-            # simulate error in one node
-            # if rank == 1:
-            #     raise Exception("Example Error")
-            
-            # Apply Gaussian filter to local chunk of image data
+            if rank == 1:
+                raise Exception("Example Error")  # Simulate error in node
+
             filtered_chunk = apply(self.task.operation_type, local_chunk)
 
-
             if rank != 0:
-                data = " ".join([self.task.id, str(rank)])
-                send_to_rmq(RMQEvent.NODE_DONE, data)
+                send_to_rmq(RMQEvent.NODE_DONE, f"{self.task.id} {rank}")
 
-            # Gather filtered chunks from all processes on rank 0
             all_filtered_chunks = comm.gather(filtered_chunk, root=0)
 
-            # On rank 0, combine filtered chunks and save the filtered image
             if rank == 0:
                 if self.didFail:
-                    data = " ".join([self.task.id])
-                    send_to_rmq(RMQEvent.PROCESSING_FAILED, data)
+                    send_to_rmq(RMQEvent.PROCESSING_FAILED, self.task.id)
                     return
                 filtered_image = np.concatenate(all_filtered_chunks, axis=1)
-                cv2.imwrite(self.task.get_save_path(), filtered_image) 
-                data = " ".join([self.task.id, self.task.get_save_path()])
-                send_to_rmq(RMQEvent.PROCESSING_DONE, data)
+                cv2.imwrite(self.task.get_save_path(), filtered_image)
+                send_to_rmq(RMQEvent.PROCESSING_DONE, f"{self.task.id} {self.task.get_save_path()}")
+
         except Exception as e:
             print(e)
-            if rank == 0:
-                data = " ".join([self.task.id])
-                send_to_rmq(RMQEvent.PROCESSING_FAILED, data)
-            else:
-                data = " ".join([self.task.id, str(rank)])
-                send_to_rmq(RMQEvent.NODE_FAILED, data)
+            send_to_rmq(RMQEvent.NODE_FAILED if rank != 0 else RMQEvent.PROCESSING_FAILED, f"{self.task.id} {rank}")
 
-                # this should always be called at the end of each node to signal done
-                all_filtered_chunks = comm.gather([], root=0)
+            comm.gather([], root=0)
 
-        try: 
+        try:
             if self.zmqReceiver:
                 self.zmqReceiver.stop_consuming()
-        except Exception as e: pass
+        except Exception as e:
+            pass
 
     def didRecieveMessage(self, event: RMQEvent, data: str):
+        """
+        Handles messages received from RabbitMQ related to node failures or task completions.
+
+        Args:
+            event (RMQEvent): The type of event (NODE_FAILED or NODE_DONE).
+            data (str): The message data containing process ID and potentially the rank of the node.
+        """
         dataSplit = data.split(" ")
         process_id = dataSplit[0]
-        if process_id != self.task.id: return 
+        if process_id != self.task.id:
+            return
+        
         if event == RMQEvent.NODE_FAILED:
-            rank = dataSplit[1] # rank of failed node
             self.didFail = True
         elif event == RMQEvent.NODE_DONE:
             self.num_of_nodes_done += 1
-
-            data = " ".join([self.task.id, str(self.num_of_nodes_done), str(self.size)])
-            send_to_rmq(RMQEvent.PROGRESS_UPDATE, data)
-
-        
-
-
+            send_to_rmq(RMQEvent.PROGRESS_UPDATE, f"{self.task.id} {self.num_of_nodes_done} {self.size}")
 
 def main():
+    """
+    Main function to parse arguments and initiate the image processing task.
+    """
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('process_id', type=str, help='The process ID')
-    parser.add_argument('img_path', type=str, help='The img path')
+    parser.add_argument('img_path', type=str, help='The image path')
     parser.add_argument('operation_id', type=int, help='The operation ID')
 
     args = parser.parse_args()
-    process_id: str = args.process_id
-    img_path: str = args.img_path
-    operation_id: int = args.operation_id
-
-    new_task = ImageProcessingTask(process_id, img_path, ImageOperation(operation_id) )
+    new_task = ImageProcessingTask(args.process_id, args.img_path, ImageOperation(args.operation_id))
 
     worker_thread = WorkerThread(new_task)
     worker_thread.start()
     worker_thread.join()
-
 
 if __name__ == '__main__':
     main()
