@@ -87,7 +87,7 @@ class WorkerThread(threading.Thread):
     def didRecieveMessage(self, event: RMQEvent, data: str):
         dataSplit = data.split(" ")
         process_id = dataSplit[0]
-        # if process_id != self.task.id: return 
+        if process_id != self.task.id: return 
         if event == RMQEvent.NODE_FAILED:
             rank = dataSplit[1] # rank of failed node
 
