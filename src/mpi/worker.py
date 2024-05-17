@@ -1,5 +1,6 @@
 import argparse
 from enum import Enum
+import time
 import uuid
 import cv2
 import numpy as np
@@ -25,6 +26,8 @@ class WorkerThread(threading.Thread):
         self.task = task
         # flag indicating if any of the nodes failed
         self.didFail = False
+        self.num_of_nodes_done = 0
+        self.size = 1
 
     def run(self):
         """
@@ -33,16 +36,18 @@ class WorkerThread(threading.Thread):
         
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
-        size = comm.Get_size()
+        self.size = comm.Get_size()
         
         try:
             # Load image data on rank 0
             if rank == 0:
-                self.zmqReceiver = RMQEventReceiver([RMQEvent.NODE_FAILED], self.didRecieveMessage)
-                image_data = divide_image_into_arrays(self.task.img_path, size)
+                self.zmqReceiver = RMQEventReceiver([RMQEvent.NODE_FAILED, RMQEvent.NODE_DONE], self.didRecieveMessage)
+                self.zmqReceiver.start()
+                image_data = divide_image_into_arrays(self.task.img_path, self.size)
             else:
                 image_data = None
 
+            time.sleep(5)
             # Scatter image data to all processes
             local_chunk = comm.scatter(image_data, root=0)
 
@@ -63,7 +68,8 @@ class WorkerThread(threading.Thread):
                 data = " ".join([self.task.id, self.task.get_save_path()])
                 send_to_rmq(RMQEvent.PROCESSING_DONE, data)
             else:
-                send_to_rmq(RMQEvent.PROGRESS_UPDATE, self.task.id)
+                data = " ".join([self.task.id, str(rank)])
+                send_to_rmq(RMQEvent.NODE_DONE, data)
         except Exception as e:
             print(e)
             if rank == 0:
@@ -74,13 +80,18 @@ class WorkerThread(threading.Thread):
                 send_to_rmq(RMQEvent.NODE_FAILED, data)
 
     def didRecieveMessage(self, event: RMQEvent, data: str):
-        if event != RMQEvent.NODE_FAILED: return
-        dataSplit = data.split(" ")
-        process_id = dataSplit[0]
-        rank = dataSplit[1] # rank of failed node
+        if event == RMQEvent.NODE_FAILED:
+            dataSplit = data.split(" ")
+            process_id = dataSplit[0]
+            rank = dataSplit[1] # rank of failed node
 
-        if process_id == self.task.id:
-            self.didFail = True
+            if process_id == self.task.id:
+                self.didFail = True
+        elif event == RMQEvent.NODE_DONE:
+            self.num_of_nodes_done += 1
+
+            data = " ".join([self.task.id, str(self.num_of_nodes_done), str(self.size)])
+            send_to_rmq(RMQEvent.PROGRESS_UPDATE, data)
 
         
 

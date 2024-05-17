@@ -7,7 +7,11 @@ class RMQEvent(Enum):
     PROCESSING_FAILED = 2
     PROCESSING_DONE = 3
     '''
-    Fired when one node is done.
+    Fired when progress is updated.
     '''
     PROGRESS_UPDATE = 4
     START_PROCESSING = 5
+    '''
+    Fired when a node finishes processing.
+    '''
+    NODE_DONE = 6

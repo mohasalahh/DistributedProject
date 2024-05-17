@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Client</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+</head>
+
+<body>
+    <script>
+        var socket = io();
+
+        // Specify the client ID when connecting
+        var process_id = window.location.pathname.split('/').pop(); // Extract the last part of the URL path
+        socket.on('connect', function () {
+            socket.emit('track', process_id);
+        });
+
+        socket.on('progress_update', function (data) {
+            var contentDiv = document.getElementById('progress');
+            contentDiv.innerHTML = 'Progress: ' + data.progress;
+        });
+    </script>
+
+    <div id="progress">
+        Progress: 0%
+    </div>
+
+</body>
+
+</html>

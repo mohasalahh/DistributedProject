@@ -1,10 +1,14 @@
+
 import uuid
-from flask import Flask, render_template, request
+from flask_socketio import SocketIO
+from flask import Flask, redirect, render_template, request
 
 from models.rmq_events import RMQEvent
+from rmq_helpers.rmq_receiver import RMQEventReceiver
 from rmq_helpers.rmq_sender import send_to_rmq
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
 @app.route('/')
 def index():
@@ -30,7 +34,41 @@ def upload():
 
         data = " ".join([id, img_path, str(op_id)])
         send_to_rmq(RMQEvent.START_PROCESSING, data)
-        return 'File uploaded successfully'
+
+        return redirect("/track/"+id)
+
+
+@app.route('/track/<string:process_id>')
+def track_process(process_id: str):
+    return render_template('track.html')
+
+# Dictionary to store client rooms
+client_rooms = {}
+
+@socketio.on('track')
+def handle_track(process_id):
+    # Store client's room
+    if process_id not in client_rooms:
+        client_rooms[process_id] = []
+    client_rooms[process_id].append(request.sid)
+
+    print(f"Client with ID: {request.sid} is tracking process: {process_id}")
+
+def didRecieveMessage(event: RMQEvent, data: str):
+    if event == RMQEvent.PROGRESS_UPDATE:
+        dataSplit = data.split(" ")
+        process_id = dataSplit[0]
+        done = int(dataSplit[1])
+        size = int(dataSplit[2])
+
+        progress = (done/size) * 100 # %
+
+        if process_id in client_rooms:
+            for client_id in client_rooms[process_id]:
+                socketio.emit('progress_update', {'id': process_id, 'progress': progress}, room=client_id)
+        
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    rmqReceiver = RMQEventReceiver([RMQEvent.PROCESSING_DONE, RMQEvent.PROGRESS_UPDATE, RMQEvent.PROCESSING_FAILED], didRecieveMessage)
+    rmqReceiver.start()
+    socketio.run(app, port=3000)

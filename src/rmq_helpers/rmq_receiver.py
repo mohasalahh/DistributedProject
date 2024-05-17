@@ -7,7 +7,7 @@ from models.rmq_events import RMQEvent
 
 class RMQEventReceiver(threading.Thread):
 
-    def __init__(self, events: List[RMQEvent], did_receive_function, addr: str = 'tcp://localhost:5555'):
+    def __init__(self, events: List[RMQEvent], did_receive_function):
         super().__init__()
         self.events = events
         self.did_receive_function = did_receive_function
@@ -38,7 +38,7 @@ class RMQEventReceiver(threading.Thread):
         channel.basic_consume(queue=queue_name, on_message_callback=self.callback, auto_ack=True)
 
         # Begin consuming messages
-        print(f"Waiting for messages: {events}. To exit, press CTRL+C")
+        print(f"Waiting for messages: {events}.")
         channel.start_consuming()
         
     def callback(self, ch, method, properties, body):
