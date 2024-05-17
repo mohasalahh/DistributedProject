@@ -17,6 +17,8 @@ class MPITask(threading.Thread):
         result = subprocess.run(['mpiexec', '-n', str(self.num_of_nodes), 'python3', "-m", "mpi.worker", self.process_id, self.img_path, self.op_id]) 
         print(result)
 
+        del self
+
 
 
 class TaskManager():

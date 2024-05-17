@@ -19,12 +19,27 @@
         });
 
         socket.on('progress_update', function (data) {
-            var contentDiv = document.getElementById('progress');
-            contentDiv.innerHTML = 'Progress: ' + data.progress;
+            // TODO: - Handle progress visually 
+            let progress = data.progress;
+            var contentDiv = document.getElementById('status');
+            contentDiv.innerHTML = 'Progress: ' + progress;
+        });
+
+        socket.on('process_failed', function (data) {
+            // TODO: - Handle process faliure here 
+            var contentDiv = document.getElementById('status');
+            contentDiv.innerHTML = 'PROCESSING FAILED';
+        });
+
+        socket.on('process_done', function (data) {
+            // TODO: - Handle process faliure here 
+            var downloadLink = data.downloadLink;
+            var contentDiv = document.getElementById('status');
+            contentDiv.innerHTML = 'PROCESS DONE: ' + downloadLink;
         });
     </script>
 
-    <div id="progress">
+    <div id="status">
         Progress: 0%
     </div>
 

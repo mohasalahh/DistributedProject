@@ -25,6 +25,7 @@ class WorkerThread(threading.Thread):
         super().__init__()
         self.task = task
         # flag indicating if any of the nodes failed
+        self.zmqReceiver = None
         self.didFail = False
         self.num_of_nodes_done = 0
         self.size = 1
@@ -79,10 +80,15 @@ class WorkerThread(threading.Thread):
                 data = " ".join([self.task.id, str(rank)])
                 send_to_rmq(RMQEvent.NODE_FAILED, data)
 
+        
+        if self.zmqReceiver:
+            self.zmqReceiver.stop_consuming()
+
     def didRecieveMessage(self, event: RMQEvent, data: str):
+        dataSplit = data.split(" ")
+        process_id = dataSplit[0]
+        # if process_id != self.task.id: return 
         if event == RMQEvent.NODE_FAILED:
-            dataSplit = data.split(" ")
-            process_id = dataSplit[0]
             rank = dataSplit[1] # rank of failed node
 
             if process_id == self.task.id:
@@ -112,6 +118,7 @@ def main():
 
     worker_thread = WorkerThread(new_task)
     worker_thread.start()
+    worker_thread.join()
 
 
 if __name__ == '__main__':

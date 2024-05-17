@@ -55,17 +55,28 @@ def handle_track(process_id):
     print(f"Client with ID: {request.sid} is tracking process: {process_id}")
 
 def didRecieveMessage(event: RMQEvent, data: str):
+    dataSplit = data.split(" ")
+    process_id = dataSplit[0]
     if event == RMQEvent.PROGRESS_UPDATE:
-        dataSplit = data.split(" ")
-        process_id = dataSplit[0]
         done = int(dataSplit[1])
         size = int(dataSplit[2])
 
         progress = (done/size) * 100 # %
+        emitUpdateOf(process_id, "progress_update", {'progress': progress})
 
-        if process_id in client_rooms:
-            for client_id in client_rooms[process_id]:
-                socketio.emit('progress_update', {'id': process_id, 'progress': progress}, room=client_id)
+    elif event == RMQEvent.PROCESSING_FAILED:
+        # TODO: - Add reason
+        emitUpdateOf(process_id, "process_failed", {'reason': "undefined"})
+    elif event == RMQEvent.PROCESSING_DONE:
+        # TODO: - Add Config
+        emitUpdateOf(process_id, "process_done", {'downloadLink': "/Users/mohamedsalah/Documents/Mixes/DistributedProject/processed_imgs/"+process_id+".png"})
+
+
+def emitUpdateOf(process_id, event, data):
+    if process_id in client_rooms:
+        for client_id in client_rooms[process_id]:
+            socketio.emit('progress_update', data, room=client_id)
+
         
 
 if __name__ == '__main__':
