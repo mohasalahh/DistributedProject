@@ -78,7 +78,20 @@ def contrast_adjustment(chunk):
     Returns:
     - contrast_adjusted_img (numpy.ndarray): The image with adjusted contrast.
     """
-    return cv2.equalizeHist(chunk)
+    
+    lab_image = cv2.cvtColor(chunk, cv2.COLOR_BGR2LAB)
+
+    # Split the Lab image into L, a, and b channels
+    l_channel, a_channel, b_channel = cv2.split(lab_image)
+
+    # Apply CLAHE to the L (Lightness) channel
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    clahe_l_channel = clahe.apply(l_channel)
+
+    # Merge the processed L channel with the original a and b channels
+    clahe_lab_image = cv2.merge((clahe_l_channel, a_channel, b_channel))
+
+    return cv2.cvtColor(clahe_lab_image, cv2.COLOR_LAB2BGR)
 
 def apply(operation: ImageOperation, img):
     """
