@@ -18,7 +18,10 @@
             socket.emit('track', process_id);
         });
 
+        var finished_processing = false;
+
         socket.on('progress_update', function (data) {
+            if (finished_processing) { return }
             // TODO: - Handle progress visually 
             let progress = data.progress;
             var contentDiv = document.getElementById('status');
@@ -26,12 +29,14 @@
         });
 
         socket.on('process_failed', function (data) {
+            finished_processing = true;
             // TODO: - Handle process faliure here 
             var contentDiv = document.getElementById('status');
             contentDiv.innerHTML = 'PROCESSING FAILED';
         });
 
         socket.on('process_done', function (data) {
+            finished_processing = true;
             // TODO: - Handle process faliure here 
             var downloadLink = data.downloadLink;
             var contentDiv = document.getElementById('status');

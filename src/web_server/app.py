@@ -30,7 +30,7 @@ def upload():
         img_path = '/Users/mohamedsalah/Documents/Mixes/DistributedProject/uploaded_imgs/' + finalFileName
         file.save(img_path)
 
-        op_id = 1
+        op_id = request.form.get('op_id')  # Get op_id from form data
 
         data = " ".join([id, img_path, str(op_id)])
         send_to_rmq(RMQEvent.START_PROCESSING, data)
@@ -75,7 +75,7 @@ def didRecieveMessage(event: RMQEvent, data: str):
 def emitUpdateOf(process_id, event, data):
     if process_id in client_rooms:
         for client_id in client_rooms[process_id]:
-            socketio.emit('progress_update', data, room=client_id)
+            socketio.emit(event, data, room=client_id)
 
         
 

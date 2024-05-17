@@ -48,7 +48,7 @@ class WorkerThread(threading.Thread):
             else:
                 image_data = None
 
-            time.sleep(5)
+            time.sleep(2)
             # Scatter image data to all processes
             local_chunk = comm.scatter(image_data, root=0)
 
@@ -80,9 +80,10 @@ class WorkerThread(threading.Thread):
                 data = " ".join([self.task.id, str(rank)])
                 send_to_rmq(RMQEvent.NODE_FAILED, data)
 
-        
-        if self.zmqReceiver:
-            self.zmqReceiver.stop_consuming()
+        try: 
+            if self.zmqReceiver:
+                self.zmqReceiver.stop_consuming()
+        except Exception as e: pass
 
     def didRecieveMessage(self, event: RMQEvent, data: str):
         dataSplit = data.split(" ")
