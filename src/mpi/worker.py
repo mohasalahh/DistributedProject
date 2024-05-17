@@ -1,5 +1,6 @@
 import argparse
 from enum import Enum
+import random
 import time
 import uuid
 import cv2
@@ -48,12 +49,17 @@ class WorkerThread(threading.Thread):
             else:
                 image_data = None
 
-            time.sleep(5)
             # Scatter image data to all processes
             local_chunk = comm.scatter(image_data, root=0)
 
+            time.sleep(random.randint(3, 10))
             # Apply Gaussian filter to local chunk of image data
             filtered_chunk = apply(self.task.operation_type, local_chunk)
+
+
+            if rank != 0:
+                data = " ".join([self.task.id, str(rank)])
+                send_to_rmq(RMQEvent.NODE_DONE, data)
 
             # Gather filtered chunks from all processes on rank 0
             all_filtered_chunks = comm.gather(filtered_chunk, root=0)
@@ -68,9 +74,6 @@ class WorkerThread(threading.Thread):
                 cv2.imwrite(self.task.get_save_path(), filtered_image) 
                 data = " ".join([self.task.id, self.task.get_save_path()])
                 send_to_rmq(RMQEvent.PROCESSING_DONE, data)
-            else:
-                data = " ".join([self.task.id, str(rank)])
-                send_to_rmq(RMQEvent.NODE_DONE, data)
         except Exception as e:
             print(e)
             if rank == 0:
