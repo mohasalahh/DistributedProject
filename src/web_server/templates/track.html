@@ -34,7 +34,7 @@
             let operation = data.operation;
             let state = data.state;
             let uploaded_file_name = data.uploaded_file_name;
-            let num_of_succeeded_nodes = data.num_of_succeeded_nodes;
+            let num_of_succeeded_nodes = data.num_of_succeeded_nodes ?? 0;
 
             addProcess(process_id, num_of_nodes, operation, state, uploaded_file_name, num_of_succeeded_nodes)
         });
@@ -51,8 +51,10 @@
             // TODO: - Handle progress visually 
             let process_id = data.id;
             let progress = data.progress;
-            console.log(progress)
-            processProgress(process_id, progress)
+            let num_of_succeeded_nodes = data.num_of_succeeded_nodes;
+            let num_of_nodes = data.num_of_nodes;
+
+            processProgress(process_id, progress, num_of_nodes, num_of_succeeded_nodes)
         });
 
         socket.on('process_failed', function (data) {
@@ -64,10 +66,8 @@
         });
 
         socket.on('process_done', function (data) {
-            console.log("as888")
             finished_processing = true;
             let process_id = data.id;
-            // TODO: - Handle process faliure here 
             var downloadLink = "../processed_imgs/" + process_id + ".png";
 
             processCompletion(process_id, downloadLink)

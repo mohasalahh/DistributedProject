@@ -46,7 +46,7 @@ num_of_succeeded_nodes: int | None = None):
 
                 if num_of_succeeded_nodes and state != ProcessState.DONE:
                     if "num_of_succeeded_nodes" in current_record:
-                        current_record["num_of_succeeded_nodes"] += num_of_succeeded_nodes
+                        current_record["num_of_succeeded_nodes"] = int(current_record["num_of_succeeded_nodes"])+num_of_succeeded_nodes
                     else:
                         current_record["num_of_succeeded_nodes"] = num_of_succeeded_nodes
                 elif state == ProcessState.DONE:

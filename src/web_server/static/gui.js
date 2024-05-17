@@ -31,13 +31,13 @@ function getNodesStatus(process_id, num_of_nodes, succeeded_nodes_count, state) 
     }
 
     if (state == 2) {
-        for (var i = succeeded_nodes_count - 1; i < num_of_nodes - succeeded_nodes_count; i++) {
+        for (var i = 0; i < num_of_nodes - succeeded_nodes_count; i++) {
             html += `
                 <div class="node-label failed" id="node-label-${i}-${process_id}">Node ${i}: Failed</div>
                 `;
         }
     } else {
-        for (var i = succeeded_nodes_count - 1; i < num_of_nodes - succeeded_nodes_count; i++) {
+        for (var i = 0; i < num_of_nodes - succeeded_nodes_count; i++) {
             html += `
                 <div class="node-label in-progress" id="node-label-${i}-${process_id}">Node ${i}: In Progress</div>
                 `;
@@ -61,7 +61,7 @@ function addProcess(process_id, num_of_nodes, operation, state, file_name, num_o
                         <div class="progress-bar-text-progress" id="progress-${process_id}">0%</div>
                     </div>
                 </div>
-                <div id="node-status-container">
+                <div id="node-status-container-${process_id}">
                 ${getNodesStatus(process_id, num_of_nodes, num_of_succeeded_nodes, state)}
                 </div>
 
@@ -95,9 +95,13 @@ function processStarted(process_id) {
     statusP.innerHTML = `<strong>Status:</strong> ${getStatusName(1)}`;
 }
 
-function processProgress(process_id, progress) {
+function processProgress(process_id, progress, num_of_nodes, num_of_succeeded_nodes) {
     const statusP = document.getElementById(`status-${process_id}`);
     statusP.innerHTML = `<strong>Status:</strong> ${getStatusName(3)}`;
+
+    console.log(num_of_nodes, num_of_succeeded_nodes)
+    const node_status = document.getElementById(`node-status-container-${process_id}`);
+    node_status.innerHTML = getNodesStatus(process_id, num_of_nodes, num_of_succeeded_nodes, 3)
 
     const progress_text = document.getElementById(`progress-${process_id}`);
     progress_text.textContent = `${progress}%`;
@@ -110,6 +114,9 @@ function processCompletion(process_id, downloadLink) {
     const statusP = document.getElementById(`status-${process_id}`);
     statusP.innerHTML = `<strong>Status:</strong> ${getStatusName(4)}`;
 
+    const node_status = document.getElementById(`node-status-container-${process_id}`);
+    node_status.innerHTML = getNodesStatus(process_id, node_status.querySelectorAll('div').length, node_status.querySelectorAll('div').length, 4)
+
     const progress_track = document.getElementById(`progress-main-${process_id}`)
     progress_track.remove()
 
@@ -118,41 +125,4 @@ function processCompletion(process_id, downloadLink) {
 
     const processed_img_card = document.getElementById(`processed-img-card-${process_id}`);
     processed_img_card.style.display = "";
-}
-
-function completeProcessing(node, image, success) {
-    const mainProgressBar = document.getElementById(`progress-main-${node}`);
-    const nodeLabel = document.getElementById(`node-label-${node}-1`);
-    const statusItem = mainProgressBar.closest('.status-item');
-
-    if (success) {
-        mainProgressBar.style.width = '100%';
-        mainProgressBar.textContent = '100%';
-        mainProgressBar.classList.add('success');
-
-        nodeLabel.textContent = `Node ${node}: Completed`;
-        nodeLabel.classList.remove('in-progress');
-        nodeLabel.classList.add('completed');
-
-        const doneState = document.createElement('div');
-        doneState.className = 'done-state';
-        doneState.innerHTML = `
-            <img src="${URL.createObjectURL(image)}" alt="original">
-            <img src="${URL.createObjectURL(image)}" alt="processed">
-            <p><a href="${URL.createObjectURL(image)}" download="processed_${image.name}">Download Processed Image</a></p>
-        `;
-        statusItem.appendChild(doneState);
-    } else {
-        mainProgressBar.classList.add('failed');
-        mainProgressBar.textContent = 'Failed';
-
-        nodeLabel.textContent = `Node ${node}: Failed`;
-        nodeLabel.classList.remove('in-progress');
-        nodeLabel.classList.add('failed');
-
-        const alert = document.createElement('div');
-        alert.className = 'alert';
-        alert.textContent = `Processing failed at node ${node}`;
-        statusItem.appendChild(alert);
-    }
 }

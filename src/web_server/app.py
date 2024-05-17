@@ -113,7 +113,7 @@ def emitRMQEvent(event: RMQEvent, data: str):
         size = int(dataSplit[2])
 
         progress = (done/size) * 100 # %
-        emitUpdateOf(process_id, "progress_update", {"id": process_id, 'progress': progress})
+        emitUpdateOf(process_id, "progress_update", {"id": process_id, 'progress': progress, "num_of_nodes": size, "num_of_succeeded_nodes": done})
 
     elif event == RMQEvent.PROCESSING_FAILED:
         # TODO: - Add reason
