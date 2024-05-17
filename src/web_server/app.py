@@ -63,7 +63,12 @@ def handle_track(processes_ids):
 def didRecieveMessage(event: RMQEvent, data: str):
     dataSplit = data.split(" ")
     process_id = dataSplit[0]
-    if event == RMQEvent.PROGRESS_UPDATE:
+
+    if event == RMQEvent.PROCESSING_STARTED:
+        num_of_nodes = dataSplit[1]
+        emitUpdateOf(process_id, "process_started", {"id": process_id, 
+                                                     "num_of_nodes": num_of_nodes})
+    elif event == RMQEvent.PROGRESS_UPDATE:
         done = int(dataSplit[1])
         size = int(dataSplit[2])
 
@@ -75,7 +80,7 @@ def didRecieveMessage(event: RMQEvent, data: str):
         emitUpdateOf(process_id, "process_failed", {"id": process_id, 'reason': "undefined"})
     elif event == RMQEvent.PROCESSING_DONE:
         # TODO: - Add Config
-        emitUpdateOf(process_id, "process_done", {"id": process_id, 'downloadLink': PROCESSED_PATH+process_id+".png"})
+        emitUpdateOf(process_id, "process_done", {"id": process_id, 'download_link': PROCESSED_PATH+process_id+".png"})
 
 
 def emitUpdateOf(process_id, event, data):
@@ -86,6 +91,6 @@ def emitUpdateOf(process_id, event, data):
         
 
 if __name__ == '__main__':
-    rmqReceiver = RMQEventReceiver([RMQEvent.PROCESSING_DONE, RMQEvent.PROGRESS_UPDATE, RMQEvent.PROCESSING_FAILED], didRecieveMessage)
+    rmqReceiver = RMQEventReceiver([RMQEvent.PROCESSING_STARTED, RMQEvent.PROCESSING_DONE, RMQEvent.PROGRESS_UPDATE, RMQEvent.PROCESSING_FAILED], didRecieveMessage)
     rmqReceiver.start()
     socketio.run(app, port=3000)

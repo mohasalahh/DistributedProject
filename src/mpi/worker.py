@@ -48,7 +48,7 @@ class WorkerThread(threading.Thread):
             else:
                 image_data = None
 
-            time.sleep(2)
+            time.sleep(5)
             # Scatter image data to all processes
             local_chunk = comm.scatter(image_data, root=0)
 

@@ -21,6 +21,15 @@
 
         var finished_processing = false;
 
+        socket.on('process_started', function (data) {
+            if (finished_processing) { return }
+            // TODO: - Handle progress visually 
+            let process_id = data.id;
+            let num_of_nodes = data.num_of_nodes;
+            var contentDiv = document.getElementById('status');
+            contentDiv.innerHTML = 'Started with ' + num_of_nodes + ' nodes.';
+        });
+
         socket.on('progress_update', function (data) {
             if (finished_processing) { return }
             // TODO: - Handle progress visually 
@@ -42,7 +51,7 @@
             finished_processing = true;
             let process_id = data.id;
             // TODO: - Handle process faliure here 
-            var downloadLink = data.downloadLink;
+            var downloadLink = data.download_link;
             var contentDiv = document.getElementById('status');
             contentDiv.innerHTML = 'PROCESS DONE: ' + downloadLink;
         });

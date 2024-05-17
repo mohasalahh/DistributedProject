@@ -15,3 +15,8 @@ class RMQEvent(Enum):
     Fired when a node finishes processing.
     '''
     NODE_DONE = 6
+
+    '''
+    Fired when processing of a specific image starts.
+    '''
+    PROCESSING_STARTED = 7

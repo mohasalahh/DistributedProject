@@ -4,6 +4,8 @@ from models.rmq_events import RMQEvent
 from rmq_helpers.rmq_receiver import RMQEventReceiver
 import subprocess
 
+from rmq_helpers.rmq_sender import send_to_rmq
+
 class MPITask(threading.Thread):
     def __init__(self, num_of_nodes, process_id, img_path, op_id):
         super().__init__()
@@ -36,6 +38,9 @@ class TaskManager():
         process_id = dataSplit[0]
         img_path = dataSplit[1]
         op_id = dataSplit[2]
+
+        data = " ".join([process_id, str(self.num_of_nodes)])
+        send_to_rmq(RMQEvent.PROCESSING_STARTED, data)
 
         newThread = MPITask(self.num_of_nodes, process_id, img_path, op_id)
         newThread.start()
