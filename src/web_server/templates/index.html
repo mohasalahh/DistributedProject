@@ -4,24 +4,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload File</title>
+    <title>Image Processing Upload</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='gui.css') }}">
 </head>
 
 <body>
-    <h1>Upload File</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="file">Select a file:</label><br>
-        <input type="file" id="file" name="files" multiple><br><br>
-
-        <label for="op_id">Operation:</label><br>
-        <select id="op_id" name="op_id">
-            <option value="1">EDGE_DETECTION</option>
-            <option value="2">COLOR_INVERSION</option>
-            <option value="3">CONTRAST_ADJUSTMENT</option>
-        </select><br><br>
-
-        <input type="submit" value="Upload">
-    </form>
+    <div class="container">
+        <h1>Image Processing Operations</h1>
+        <div class="upload-section">
+            <h2>Upload Images</h2>
+            <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+                <input type="file" id="images" name="files" multiple accept="image/*">
+                <label for="operation">Choose an operation:</label>
+                <select id="operation" name="op_id">
+                    <option value="1">Edge Detection</option>
+                    <option value="2">Color Inversion</option>
+                    <option value="3">Contrast Adjustment</option>
+                </select>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

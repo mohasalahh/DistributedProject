@@ -1,0 +1,140 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #e0f7fa; /* Light blue background */
+}
+
+.container {
+    width: 80%;
+    margin: 20px auto;
+    background: #ffffff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #007BFF; /* Blue color */
+}
+
+.upload-section, .track-section {
+    margin: 20px 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+input[type="file"] {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8bbd0; /* Light pink background */
+}
+
+select {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f8bbd0; /* Light pink background */
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #007BFF; /* Blue background */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+.status-item {
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.status-item img {
+    width: 150px;
+    height: auto;
+    margin: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.progress-bar {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar div {
+    height: 30px;
+    background-color: #007BFF; /* Blue progress bar */
+    text-align: center;
+    line-height: 30px;
+    color: white;
+}
+
+.failed {
+    background-color: #f44336 !important; /* Red for failure */
+}
+
+.success {
+    background-color: #4CAF50 !important; /* Green for success */
+}
+
+.alert {
+    padding: 15px;
+    background-color: #f44336;
+    color: white;
+    margin-top: 15px;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.node-status {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.node-status div {
+    margin: 0 10px;
+}
+
+.node-label {
+    padding: 5px 10px;
+    border-radius: 5px;
+    color: white;
+    text-align: center;
+    display: inline-block;
+}
+
+.node-label.in-progress {
+    background-color: #007BFF; /* Blue for in progress */
+}
+
+.node-label.completed {
+    background-color: #4CAF50; /* Green for success */
+}
+
+.node-label.failed {
+    background-color: #f44336; /* Red for failure */
+}
