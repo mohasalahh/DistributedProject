@@ -52,16 +52,20 @@ function addProcess(process_id, num_of_nodes, operation, state, file_name) {
                     <div class="card">
                         <img src="../uploaded_imgs/${file_name}" alt="Original Image">
                         <div class="card-text">Original Image</div>
+                        <a href="../uploaded_imgs/${file_name}" download="original-image-${process_id}.png">
                         <div class="download-icon">
-                        <i class="fa-solid fa-download"></i>
+                            <i class="fa-solid fa-download"></i>
                         </div>
+                        </a>
                     </div>
-                    <div class="card">
+                    <div class="card" id="processed-img-card-${process_id}" style="${state == 4 ? "" : "display: none;"}">
                         <img id="processed-img-${process_id}" src="../processed_imgs/${process_id}.png" alt="Processed Image">
                         <div class="card-text">Processed Image</div>
+                        <a href="../processed_imgs/${process_id}.png" download="processed-image-${process_id}.png">
                         <div class="download-icon">
-                        <i class="fa-solid fa-download"></i>
+                            <i class="fa-solid fa-download"></i>
                         </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -94,6 +98,9 @@ function processCompletion(process_id, downloadLink) {
 
     const processed_img = document.getElementById(`processed-img-${process_id}`);
     processed_img.src = downloadLink;
+
+    const processed_img_card = document.getElementById(`processed-img-card-${process_id}`);
+    processed_img_card.style.display = "";
 }
 
 function completeProcessing(node, image, success) {
