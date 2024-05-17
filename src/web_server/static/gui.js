@@ -46,7 +46,7 @@ function getNodesStatus(process_id, num_of_nodes, succeeded_nodes_count, state) 
     return html;
 }
 
-function addProcess(process_id, num_of_nodes, operation, state, file_name, num_of_succeeded_nodes) {
+function addProcess(process_id, num_of_nodes, operation, state, file_name, num_of_succeeded_nodes, progress) {
     const statusContainer = document.getElementById('container');
 
     const statusItem = document.createElement('div');
@@ -57,11 +57,11 @@ function addProcess(process_id, num_of_nodes, operation, state, file_name, num_o
                 <p><strong>Operation:</strong> ${getOpName(operation)}</p>
                 <p id="status-${process_id}"><strong>Status:</strong> ${getStatusName(state)}</p>
                 <div class="progress-bar" style="${state == 1 || state == 3 ? "" : "display: none;"}">
-                    <div class="progress-bar-progress" id="progress-main-${process_id}" style="width: 0%">
-                        <div class="progress-bar-text-progress" id="progress-${process_id}">0%</div>
+                    <div class="progress-bar-progress" id="progress-main-${process_id}" style="width: ${progress}%">
+                        <div class="progress-bar-text-progress" id="progress-${process_id}">${progress}%</div>
                     </div>
                 </div>
-                <div id="node-status-container-${process_id}">
+                <div class="node-status-container" id="node-status-container-${process_id}">
                 ${getNodesStatus(process_id, num_of_nodes, num_of_succeeded_nodes, state)}
                 </div>
 
@@ -125,4 +125,15 @@ function processCompletion(process_id, downloadLink) {
 
     const processed_img_card = document.getElementById(`processed-img-card-${process_id}`);
     processed_img_card.style.display = "";
+}
+
+function processFailure(process_id) {
+    const statusP = document.getElementById(`status-${process_id}`);
+    statusP.innerHTML = `<strong>Status:</strong> ${getStatusName(2)}`;
+
+    const node_status = document.getElementById(`node-status-container-${process_id}`);
+    node_status.innerHTML = getNodesStatus(process_id, node_status.querySelectorAll('div').length, node_status.querySelectorAll('.completed').length, 2)
+
+    const progress_track = document.getElementById(`progress-main-${process_id}`)
+    progress_track.remove()
 }

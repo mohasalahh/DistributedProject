@@ -70,6 +70,7 @@ def handle_track(processes_ids):
         
         current_state = get_from_redis(process_id)
         if current_state:
+            print(current_state)
             current_state["id"] = process_id
             emitUpdateOf(process_id, "start_tracking", current_state)
 
@@ -87,6 +88,10 @@ def didRecieveMessage(event: RMQEvent, data: str):
         set_to_redis(process_id, state=ProcessState.STARTED, num_of_nodes=num_of_nodes, operation=ImageOperation(int(op_id)), uploaded_file_name=file_name)
 
     elif event == RMQEvent.PROGRESS_UPDATE:
+        current_state = get_from_redis(process_id)
+        if current_state and (current_state['state'] == ProcessState.DONE or current_state['state'] == ProcessState.FAILED):
+            return
+
         done = int(dataSplit[1])
         size = int(dataSplit[2])
 
@@ -97,7 +102,7 @@ def didRecieveMessage(event: RMQEvent, data: str):
         set_to_redis(process_id, state=ProcessState.FAILED)
     elif event == RMQEvent.PROCESSING_DONE:
         set_to_redis(process_id, state=ProcessState.DONE)
-
+    print("aaaaaaaa")
     emitRMQEvent(event, data)
 
 def emitRMQEvent(event: RMQEvent, data: str): 

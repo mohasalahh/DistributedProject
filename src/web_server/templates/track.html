@@ -27,7 +27,6 @@
         var finished_processing = false;
 
         socket.on('start_tracking', function (data) {
-            console.log(data)
             // TODO: - Handle progress visually 
             let process_id = data.id;
             let num_of_nodes = data.num_of_nodes;
@@ -35,8 +34,9 @@
             let state = data.state;
             let uploaded_file_name = data.uploaded_file_name;
             let num_of_succeeded_nodes = data.num_of_succeeded_nodes ?? 0;
+            let progress = data.progress ?? 0;
 
-            addProcess(process_id, num_of_nodes, operation, state, uploaded_file_name, num_of_succeeded_nodes)
+            addProcess(process_id, num_of_nodes, operation, state, uploaded_file_name, num_of_succeeded_nodes, progress)
         });
 
         socket.on('process_started', function (data) {
@@ -60,9 +60,8 @@
         socket.on('process_failed', function (data) {
             finished_processing = true;
             let process_id = data.id;
-            // TODO: - Handle process faliure here 
-            var contentDiv = document.getElementById('status');
-            contentDiv.innerHTML = 'PROCESSING FAILED';
+
+            processFailure(process_id)
         });
 
         socket.on('process_done', function (data) {

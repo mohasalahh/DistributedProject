@@ -221,3 +221,8 @@ button:hover {
     width: 20px;
     height: 20px;
 }
+
+.node-status-container {
+    justify-content: center;
+    display: flex;
+}
