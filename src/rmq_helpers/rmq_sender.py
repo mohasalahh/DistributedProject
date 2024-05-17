@@ -1,11 +1,12 @@
 import pika
 
+from constants import RMQ_ADDR, RMQ_PORT
 from models.rmq_events import RMQEvent
 
 def send_to_rmq(event: RMQEvent, data: str):
     try:
         # Establish a new connection
-        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(RMQ_ADDR, port=RMQ_PORT))
         # Create a new channel
         channel = connection.channel()
 

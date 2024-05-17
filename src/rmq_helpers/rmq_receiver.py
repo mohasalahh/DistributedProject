@@ -2,6 +2,7 @@ import threading
 from typing import List
 import pika
 
+from constants import RMQ_ADDR, RMQ_PORT
 from models.rmq_events import RMQEvent
 
 class RMQEventReceiver(threading.Thread):
@@ -18,7 +19,7 @@ class RMQEventReceiver(threading.Thread):
     def consume_messages(self, events: List[RMQEvent]):
         try:
             # Establish a new connection
-            self.connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+            self.connection = pika.BlockingConnection(pika.ConnectionParameters(RMQ_ADDR, port=RMQ_PORT))
             # Create a new channel
             self.channel = self.connection.channel()
 
