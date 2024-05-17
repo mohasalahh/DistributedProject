@@ -68,14 +68,14 @@ def didRecieveMessage(event: RMQEvent, data: str):
         size = int(dataSplit[2])
 
         progress = (done/size) * 100 # %
-        emitUpdateOf(process_id, "progress_update", {'progress': progress})
+        emitUpdateOf(process_id, "progress_update", {"id": process_id, 'progress': progress})
 
     elif event == RMQEvent.PROCESSING_FAILED:
         # TODO: - Add reason
-        emitUpdateOf(process_id, "process_failed", {'reason': "undefined"})
+        emitUpdateOf(process_id, "process_failed", {"id": process_id, 'reason': "undefined"})
     elif event == RMQEvent.PROCESSING_DONE:
         # TODO: - Add Config
-        emitUpdateOf(process_id, "process_done", {'downloadLink': PROCESSED_PATH+process_id+".png"})
+        emitUpdateOf(process_id, "process_done", {"id": process_id, 'downloadLink': PROCESSED_PATH+process_id+".png"})
 
 
 def emitUpdateOf(process_id, event, data):

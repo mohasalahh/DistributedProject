@@ -25,12 +25,14 @@
             if (finished_processing) { return }
             // TODO: - Handle progress visually 
             let progress = data.progress;
+            let process_id = data.id;
             var contentDiv = document.getElementById('status');
             contentDiv.innerHTML = 'Progress: ' + progress;
         });
 
         socket.on('process_failed', function (data) {
             finished_processing = true;
+            let process_id = data.id;
             // TODO: - Handle process faliure here 
             var contentDiv = document.getElementById('status');
             contentDiv.innerHTML = 'PROCESSING FAILED';
@@ -38,6 +40,7 @@
 
         socket.on('process_done', function (data) {
             finished_processing = true;
+            let process_id = data.id;
             // TODO: - Handle process faliure here 
             var downloadLink = data.downloadLink;
             var contentDiv = document.getElementById('status');
