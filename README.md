@@ -41,3 +41,13 @@ The system integrates the following components:
 - **Image Upload**: Users can upload images through the web interface.
 - **Image Processing**: Uploaded images are split into parts, processed in parallel, and recombined.
 - **Result Retrieval**: Users can download or view the processed images.
+
+
+## RabbitMQ Docker command
+
+docker run -d --hostname rmq --name rabbit-server -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+
+
+## Redis Docker command
+
+docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
