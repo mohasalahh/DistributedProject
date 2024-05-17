@@ -4,8 +4,9 @@ from flask_socketio import SocketIO
 from flask import Flask, redirect, render_template, request
 
 from constants import PROCESSED_PATH, UPLOADED_PATH
+from models.image_processing_task import ImageOperation
 from models.rmq_events import RMQEvent
-from redis_access.redis_access import get_from_redis, set_to_redis
+from redis_access.redis_access import ProcessState, get_from_redis, set_to_redis
 from rmq_helpers.rmq_receiver import RMQEventReceiver
 from rmq_helpers.rmq_sender import send_to_rmq
 
@@ -59,19 +60,35 @@ def handle_track(processes_ids):
             client_rooms[process_id] = []
         client_rooms[process_id].append(request.sid)
         
-        current_state = str(get_from_redis(process_id))
+        current_state = get_from_redis(process_id)
+        print(current_state)
         if current_state:
-            current_state_split = current_state.split(" ")
-            event = RMQEvent[current_state_split[0]]
-            emitRMQEvent(event, " ".join(current_state_split[1:]))
+            current_state["id"] = process_id
+            emitUpdateOf(process_id, "start_tracking", current_state)
 
         print(f"Client with ID: {request.sid} is tracking process: {process_id}")
 
 def didRecieveMessage(event: RMQEvent, data: str):
     dataSplit = data.split(" ")
     process_id = dataSplit[0]
-        
-    set_to_redis(process_id, " ".join([event.name, data]))
+    
+    if event == RMQEvent.PROCESSING_STARTED:
+        num_of_nodes = dataSplit[1]
+        op_id = dataSplit[2]
+        set_to_redis(process_id, state=ProcessState.STARTED, num_of_nodes=num_of_nodes, operation=ImageOperation(int(op_id)))
+
+    elif event == RMQEvent.PROGRESS_UPDATE:
+        done = int(dataSplit[1])
+        size = int(dataSplit[2])
+
+        progress = (done/size) * 100 # %
+        set_to_redis(process_id, state=ProcessState.PROGRESS, progress=progress)
+
+    elif event == RMQEvent.PROCESSING_FAILED:
+        set_to_redis(process_id, state=ProcessState.FAILED)
+    elif event == RMQEvent.PROCESSING_DONE:
+        set_to_redis(process_id, state=ProcessState.DONE)
+
     emitRMQEvent(event, data)
 
 def emitRMQEvent(event: RMQEvent, data: str): 

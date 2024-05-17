@@ -1,26 +1,71 @@
-document.getElementById('upload-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const images = document.getElementById('images').files;
-    const operation = document.getElementById('operation').value;
-    
-    for (let i = 0; i < images.length; i++) {
-        processImage(images[i], operation, i + 1); // Mock node assignment
+
+function getOpName(opId) {
+    if (opId == 1) {
+        return "EDGE_DETECTION";
+    } else if (opId == 2) {
+        return "COLOR_INVERSION";
+    } else if (opId == 3) {
+        return "CONTRAST_ADJUSTMENT";
     }
-});
+}
 
-function processImage(image, operation, node) {
-    const statusContainer = document.getElementById('status-container');
+function getStatusName(stateId) {
+    if (stateId == 1) {
+        return "STARTED";
+    } else if (stateId == 2) {
+        return "FAILED";
+    } else if (stateId == 3) {
+        return "PROGRESS";
+    } else if (stateId == 4) {
+        return "DONE";
+    }
+}
 
+function addProcess(process_id, num_of_nodes, operation, state, node) {
+    const statusContainer = document.getElementById('container');
+
+    console.log(state)
     const statusItem = document.createElement('div');
-    statusItem.className = 'status-item';
+    statusItem.className = 'container';
     statusItem.innerHTML = `
-        <p><strong>Image:</strong> ${image.name}</p>
-        <p><strong>Operation:</strong> ${operation}</p>
-        <div class="progress-bar"><div id="progress-main-${node}" style="width: 0%">0%</div></div>
-        <p><strong>Status:</strong> In Progress</p>
-        <div class="node-status" id="node-status-${node}">
-            <div class="node-label in-progress" id="node-label-${node}-1">Node ${node}: In Progress</div>
-        </div>
+            <div id="status-container">
+                <p><strong>Process id:</strong> ${process_id}</p>
+                <p><strong>Operation:</strong> ${getOpName(operation)}</p>
+                <p><strong>Status:</strong> ${getStatusName(state)}</p>
+                <div class="progress-bar">
+                    <div class="progress-bar-progress" id="progress-main-${process_id}" style="width: 0%">
+                        <div class="progress-bar-text-progress">0%</div>
+                    </div>
+                </div>
+                <div id="node-status-container">
+                    <div class="node-status" id="node-status-${node}">
+                        <div class="node-label in-progress" id="node-label-${node}-1">Node ${node}: In Progress</div>
+                    </div>
+                    <div class="node-status" id="node-status-${node}">
+                        <div class="node-label in-progress" id="node-label-${node}-1">Node ${node}: In Progress</div>
+                    </div>
+                    <div class="node-status" id="node-status-${node}">
+                        <div class="node-label in-progress" id="node-label-${node}-1">Node ${node}: In Progress</div>
+                    </div>
+                </div>
+
+                <div class="done-state">
+                    <div class="card">
+                        <img src="your-image-url.jpg" alt="Image description">
+                        <div class="card-text">Original Image</div>
+                        <div class="download-icon">
+                            <img src="download-icon-url.png" alt="Download">
+                        </div>
+                    </div>
+                    <div class="card">
+                        <img src="your-image-url.jpg" alt="Image description">
+                        <div class="card-text">Original Image</div>
+                        <div class="download-icon">
+                            <img src="download-icon-url.png" alt="Download">
+                        </div>
+                    </div>
+                </div>
+            </div>
     `;
     statusContainer.appendChild(statusItem);
 

@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Socket.IO Client</title>
+    <title>Image Processing Interface</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='gui.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
-</head>
+    <script src="{{ url_for('static', filename='gui.js') }}"></script>
 
-<body>
     <script>
         var socket = io();
 
@@ -20,6 +20,17 @@
         });
 
         var finished_processing = false;
+
+        socket.on('start_tracking', function (data) {
+            console.log(data)
+            // TODO: - Handle progress visually 
+            let process_id = data.id;
+            let num_of_nodes = data.num_of_nodes;
+            let operation = data.operation;
+            let state = data.state;
+
+            addProcess(process_id, num_of_nodes, operation, state)
+        });
 
         socket.on('process_started', function (data) {
             if (finished_processing) { return }
@@ -57,11 +68,14 @@
             contentDiv.innerHTML = 'PROCESS DONE: ' + downloadLink;
         });
     </script>
+</head>
 
-    <div id="status">
-        Progress: 0%
+<body>
+    <div id="container">
+
     </div>
 
+    <script src="gui.js"></script>
 </body>
 
 </html>
