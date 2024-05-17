@@ -21,7 +21,32 @@ function getStatusName(stateId) {
     }
 }
 
-function addProcess(process_id, num_of_nodes, operation, state, file_name) {
+function getNodesStatus(process_id, num_of_nodes, succeeded_nodes_count, state) {
+    let html = "";
+
+    for (var i = 0; i < succeeded_nodes_count; i++) {
+        html += `
+            <div class="node-label completed" id="node-label-${i}-${process_id}">Node ${i}: Completed</div>
+            `;
+    }
+
+    if (state == 2) {
+        for (var i = succeeded_nodes_count - 1; i < num_of_nodes - succeeded_nodes_count; i++) {
+            html += `
+                <div class="node-label failed" id="node-label-${i}-${process_id}">Node ${i}: Failed</div>
+                `;
+        }
+    } else {
+        for (var i = succeeded_nodes_count - 1; i < num_of_nodes - succeeded_nodes_count; i++) {
+            html += `
+                <div class="node-label in-progress" id="node-label-${i}-${process_id}">Node ${i}: In Progress</div>
+                `;
+        }
+    }
+    return html;
+}
+
+function addProcess(process_id, num_of_nodes, operation, state, file_name, num_of_succeeded_nodes) {
     const statusContainer = document.getElementById('container');
 
     const statusItem = document.createElement('div');
@@ -37,15 +62,7 @@ function addProcess(process_id, num_of_nodes, operation, state, file_name) {
                     </div>
                 </div>
                 <div id="node-status-container">
-                    <div class="node-status" id="node-status-${1}">
-                        <div class="node-label in-progress" id="node-label-${1}-1">Node ${1}: In Progress</div>
-                    </div>
-                    <div class="node-status" id="node-status-${1}">
-                        <div class="node-label in-progress" id="node-label-${1}-1">Node ${1}: In Progress</div>
-                    </div>
-                    <div class="node-status" id="node-status-${1}">
-                        <div class="node-label in-progress" id="node-label-${1}-1">Node ${1}: In Progress</div>
-                    </div>
+                ${getNodesStatus(process_id, num_of_nodes, num_of_succeeded_nodes, state)}
                 </div>
 
                 <div class="done-state">

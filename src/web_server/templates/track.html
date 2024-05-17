@@ -34,8 +34,9 @@
             let operation = data.operation;
             let state = data.state;
             let uploaded_file_name = data.uploaded_file_name;
+            let num_of_succeeded_nodes = data.num_of_succeeded_nodes;
 
-            addProcess(process_id, num_of_nodes, operation, state, uploaded_file_name)
+            addProcess(process_id, num_of_nodes, operation, state, uploaded_file_name, num_of_succeeded_nodes)
         });
 
         socket.on('process_started', function (data) {

@@ -91,7 +91,7 @@ def didRecieveMessage(event: RMQEvent, data: str):
         size = int(dataSplit[2])
 
         progress = (done/size) * 100 # %
-        set_to_redis(process_id, state=ProcessState.PROGRESS, progress=progress)
+        set_to_redis(process_id, state=ProcessState.PROGRESS, progress=progress, num_of_succeeded_nodes=1)
 
     elif event == RMQEvent.PROCESSING_FAILED:
         set_to_redis(process_id, state=ProcessState.FAILED)
