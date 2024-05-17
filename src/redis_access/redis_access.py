@@ -25,11 +25,14 @@ def acquire_lock(lock_name, timeout=10):
         else:
             time.sleep(0.1)
             
-def set_to_redis(key: str, state: ProcessState | None = None, num_of_nodes: int | None = None, operation: ImageOperation | None = None, progress: float | None = None):
+def set_to_redis(key: str, state: ProcessState | None = None, num_of_nodes: int | None = None, operation: ImageOperation | None = None, progress: float | None = None, uploaded_file_name: str | None = None):
     current_record = get_from_redis(key)
     if not current_record:
         current_record = {}
-    
+        
+    if uploaded_file_name:
+        current_record["uploaded_file_name"] = uploaded_file_name
+        
     if state:
         current_record["state"] = state
     if num_of_nodes:

@@ -1,7 +1,7 @@
 
 import uuid
 from flask_socketio import SocketIO
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, send_from_directory
 
 from constants import PROCESSED_PATH, UPLOADED_PATH
 from models.image_processing_task import ImageOperation
@@ -17,12 +17,20 @@ socketio = SocketIO(app)
 def index():
     return render_template('index.html')
 
+@app.route('/uploaded_imgs/<path:filename>')
+def uploaded_imgs_static(filename):
+    return send_from_directory(UPLOADED_PATH, filename)
+
+@app.route('/processed_imgs/<path:filename>')
+def processed_imgs_static(filename):
+    return send_from_directory(PROCESSED_PATH, filename)
+
 @app.route('/upload', methods=['POST'])
 def upload():
     if 'files' not in request.files:
         return 'No file part'
     files = request.files.getlist('files')
-    if len(files) == 0:
+    if len(files) == 0 or files[0].filename == '':
         return 'No selected files'
     
     tracked_ids = []
@@ -61,7 +69,6 @@ def handle_track(processes_ids):
         client_rooms[process_id].append(request.sid)
         
         current_state = get_from_redis(process_id)
-        print(current_state)
         if current_state:
             current_state["id"] = process_id
             emitUpdateOf(process_id, "start_tracking", current_state)
@@ -75,7 +82,9 @@ def didRecieveMessage(event: RMQEvent, data: str):
     if event == RMQEvent.PROCESSING_STARTED:
         num_of_nodes = dataSplit[1]
         op_id = dataSplit[2]
-        set_to_redis(process_id, state=ProcessState.STARTED, num_of_nodes=num_of_nodes, operation=ImageOperation(int(op_id)))
+        img_path_split = dataSplit[3].split("/")
+        file_name = img_path_split[len(img_path_split)-1]
+        set_to_redis(process_id, state=ProcessState.STARTED, num_of_nodes=num_of_nodes, operation=ImageOperation(int(op_id)), uploaded_file_name=file_name)
 
     elif event == RMQEvent.PROGRESS_UPDATE:
         done = int(dataSplit[1])

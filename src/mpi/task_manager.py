@@ -39,7 +39,7 @@ class TaskManager():
         img_path = dataSplit[1]
         op_id = dataSplit[2]
 
-        data = " ".join([process_id, str(self.num_of_nodes), op_id])
+        data = " ".join([process_id, str(self.num_of_nodes), op_id, img_path])
         send_to_rmq(RMQEvent.PROCESSING_STARTED, data)
 
         newThread = MPITask(self.num_of_nodes, process_id, img_path, op_id)

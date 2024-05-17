@@ -98,6 +98,7 @@ button:hover {
     text-align: center;
     line-height: 30px;
     color: white;
+    transition: width 0.5s;
 }
 
 .progress-bar-text-progress {
@@ -208,6 +209,7 @@ button:hover {
     border-radius: 50%;
     cursor: pointer;
     transition: background-color 0.3s;
+    color: #007BFF;
 }
 
 .download-icon:hover {

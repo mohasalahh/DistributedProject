@@ -5,9 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Processing Interface</title>
+    <link href="/static/fa/css/fontawesome.css" rel="stylesheet" />
+    <link href="/static/fa/css/brands.css" rel="stylesheet" />
+    <link href="/static/fa/css/solid.css" rel="stylesheet" />
+
     <link rel="stylesheet" href="{{ url_for('static', filename='gui.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
     <script src="{{ url_for('static', filename='gui.js') }}"></script>
+
 
     <script>
         var socket = io();
@@ -28,26 +33,25 @@
             let num_of_nodes = data.num_of_nodes;
             let operation = data.operation;
             let state = data.state;
+            let uploaded_file_name = data.uploaded_file_name;
 
-            addProcess(process_id, num_of_nodes, operation, state)
+            addProcess(process_id, num_of_nodes, operation, state, uploaded_file_name)
         });
 
         socket.on('process_started', function (data) {
-            if (finished_processing) { return }
             // TODO: - Handle progress visually 
             let process_id = data.id;
             let num_of_nodes = data.num_of_nodes;
-            var contentDiv = document.getElementById('status');
-            contentDiv.innerHTML = 'Started with ' + num_of_nodes + ' nodes.';
+            processStarted(process_id)
         });
 
         socket.on('progress_update', function (data) {
-            if (finished_processing) { return }
+            // if (finished_processing) { return }
             // TODO: - Handle progress visually 
-            let progress = data.progress;
             let process_id = data.id;
-            var contentDiv = document.getElementById('status');
-            contentDiv.innerHTML = 'Progress: ' + progress;
+            let progress = data.progress;
+            console.log(progress)
+            processProgress(process_id, progress)
         });
 
         socket.on('process_failed', function (data) {
@@ -63,9 +67,9 @@
             finished_processing = true;
             let process_id = data.id;
             // TODO: - Handle process faliure here 
-            var downloadLink = data.download_link;
-            var contentDiv = document.getElementById('status');
-            contentDiv.innerHTML = 'PROCESS DONE: ' + downloadLink;
+            var downloadLink = "../processed_imgs/" + process_id + ".png";
+
+            processCompletion(process_id, downloadLink)
         });
     </script>
 </head>
