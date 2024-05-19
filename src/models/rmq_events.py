@@ -20,3 +20,5 @@ class RMQEvent(Enum):
     Fired when processing of a specific image starts.
     '''
     PROCESSING_STARTED = 7
+    ADD_NODE = 8
+    REMOVE_NODE = 9

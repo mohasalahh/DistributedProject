@@ -27,7 +27,7 @@ class MPITask(threading.Thread):
         Executes the MPI worker script using the provided attributes. 
         This function is automatically called when the thread is started.
         """
-        result = subprocess.run(['mpiexec', '-n', str(self.num_of_nodes), 'python3', "-m", "mpi.worker", self.process_id, self.img_path, self.op_id])
+        result = subprocess.run(['mpiexec', '-n', str(self.num_of_nodes), '-hostfile', '~/nodefile', 'python3', "-m", "mpi.worker", self.process_id, self.img_path, self.op_id])
         print(result)
         del self  # Delete this thread object after execution is completed
 
@@ -43,7 +43,9 @@ class TaskManager():
     def __init__(self):
         super().__init__()
         self.zmqReceiver = RMQEventReceiver([RMQEvent.START_PROCESSING], self.didRecieveMessage)
-        self.num_of_nodes = 4
+        with open('/home/ubuntu/host_num', 'r') as file:
+            current_value = file.read().strip()
+        self.num_of_nodes = int(current_value) or 1
 
     def didRecieveMessage(self, event: RMQEvent, data: str):
         """
@@ -54,19 +56,25 @@ class TaskManager():
             event (RMQEvent): The type of event that triggered the message.
             data (str): The data received with the event, expected to contain process_id, img_path, and op_id.
         """
-        if event != RMQEvent.START_PROCESSING:
+        if event == RMQEvent.ADD_NODE:
+            self.num_of_nodes += 1
             return
-        
-        dataSplit = data.split(" ")
-        process_id = dataSplit[0]
-        img_path = dataSplit[1]
-        op_id = dataSplit[2]
+        if event == RMQEvent.REMOVE_NODE:
+            self.num_of_nodes -= 1
+            return
+        if event == RMQEvent.START_PROCESSING:
+            dataSplit = data.split(" ")
+            print(dataSplit)
+            process_id = dataSplit[0]
+            img_path = dataSplit[1]
+            op_id = dataSplit[2]
 
-        data = " ".join([process_id, str(self.num_of_nodes), op_id, img_path])
-        send_to_rmq(RMQEvent.PROCESSING_STARTED, data)
+            data = " ".join([process_id, str(self.num_of_nodes)])
+            send_to_rmq(RMQEvent.PROCESSING_STARTED, data)
 
-        newThread = MPITask(self.num_of_nodes, process_id, img_path, op_id)
-        newThread.start()
+            newThread = MPITask(self.num_of_nodes, process_id, img_path, op_id)
+            newThread.start()
+            return
 
     def startListening(self):
         """
