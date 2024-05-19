@@ -51,3 +51,13 @@ docker run -d --hostname rmq --name rabbit-server -p 15672:15672 -p 5672:5672 ra
 ## Redis Docker command
 
 docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest
+
+
+## Screenshots
+
+<img width="1512" alt="Screenshot 2024-05-17 at 11 47 33 PM" src="https://github.com/mohasalahh/DistributedProject/assets/10936011/6d9b7fbe-b9b6-48e0-a228-2853b169466b">
+<img width="1512" alt="Screenshot 2024-05-17 at 11 46 26 PM" src="https://github.com/mohasalahh/DistributedProject/assets/10936011/f8222d47-78fd-467f-ae98-b583ecf505d0">
+<img width="1512" alt="Screenshot 2024-05-17 at 11 46 20 PM" src="https://github.com/mohasalahh/DistributedProject/assets/10936011/366465e9-be39-48e6-8f41-41d7d689d364">
+<img width="1512" alt="Screenshot 2024-05-17 at 11 46 15 PM" src="https://github.com/mohasalahh/DistributedProject/assets/10936011/35e58138-21a0-46bb-bb0a-ce349c3e3fb7">
+<img width="1512" alt="Screenshot 2024-05-17 at 11 46 11 PM" src="https://github.com/mohasalahh/DistributedProject/assets/10936011/41c182f1-5333-43d4-bb68-baa43e7a3403">
+<img width="1512" alt="Screenshot 2024-05-17 at 11 45 57 PM" src="https://github.com/mohasalahh/DistributedProject/assets/10936011/6f73d9ac-d6fc-407c-94c7-917dff793c75">
